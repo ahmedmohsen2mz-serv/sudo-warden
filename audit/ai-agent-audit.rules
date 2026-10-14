@@ -1,0 +1,36 @@
+# ============================================================
+# AI Agent Auditd Rules
+# File: /etc/audit/rules.d/99-ai-agent.rules
+# Purpose: Kernel-level audit trail for ai-agent user
+# Reload: sudo augenrules --load
+# ============================================================
+
+# Log all command executions by ai-agent user
+-a always,exit -F arch=b64 -S execve -F uid=ai-agent -k ai-agent-exec
+-a always,exit -F arch=b32 -S execve -F uid=ai-agent -k ai-agent-exec
+
+# Log file open/create/modify operations by ai-agent
+-a always,exit -F arch=b64 -S open,openat,creat -F uid=ai-agent -F success=1 -k ai-agent-file
+-a always,exit -F arch=b32 -S open,openat,creat -F uid=ai-agent -F success=1 -k ai-agent-file
+
+# Log network connections by ai-agent
+-a always,exit -F arch=b64 -S connect -F uid=ai-agent -k ai-agent-net
+-a always,exit -F arch=b32 -S connect -F uid=ai-agent -k ai-agent-net
+
+# Log permission changes (should never happen but alert if it does)
+-a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F uid=ai-agent -k ai-agent-perm
+-a always,exit -F arch=b64 -S chown,fchown,fchownat,lchown -F uid=ai-agent -k ai-agent-perm
+
+# Log file deletion attempts (should never happen)
+-a always,exit -F arch=b64 -S unlink,unlinkat,rename,renameat -F uid=ai-agent -k ai-agent-delete
+-a always,exit -F arch=b32 -S unlink,unlinkat,rename,renameat -F uid=ai-agent -k ai-agent-delete
+
+# Log any attempts to modify sudoers
+-w /etc/sudoers -p wa -k ai-agent-sudoers
+-w /etc/sudoers.d/ -p wa -k ai-agent-sudoers
+
+# Log modifications to critical system files
+-w /etc/passwd -p wa -k ai-agent-identity
+-w /etc/shadow -p wa -k ai-agent-identity
+-w /etc/group -p wa -k ai-agent-identity
+-w /etc/ssh/sshd_config -p wa -k ai-agent-ssh

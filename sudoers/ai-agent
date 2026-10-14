@@ -1,0 +1,372 @@
+# ============================================================
+# AI AGENT SUDOERS CONFIGURATION - PRODUCTION SERVER
+# File: /etc/sudoers.d/ai-agent
+# Deploy: cp ai-agent /etc/sudoers.d/ && chmod 0440 /etc/sudoers.d/ai-agent
+# Validate: visudo -cf /etc/sudoers.d/ai-agent
+# ============================================================
+# Security Model: WHITELIST ONLY - only listed commands are allowed
+# Read-Only Diagnostics: NOPASSWD (free diagnostic access)
+# Write Operations: Through audited wrapper scripts ONLY
+# All I/O: Logged to /var/log/ai-agent/
+# ============================================================
+
+# ----------------------------------------------------------------
+# DEFAULTS - Strict security & full audit trail
+# ----------------------------------------------------------------
+Defaults:ai-agent    timestamp_timeout=0
+Defaults:ai-agent    passwd_timeout=0
+Defaults:ai-agent    log_input, log_output
+Defaults:ai-agent    iolog_dir=/var/log/ai-agent/sudo-io/%{seq}
+Defaults:ai-agent    logfile=/var/log/ai-agent/sudo.log
+Defaults:ai-agent    env_reset
+Defaults:ai-agent    secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Defaults:ai-agent    !requiretty
+Defaults:ai-agent    use_pty
+Defaults:ai-agent    umask=0022
+
+# ================================================================
+#  READ-ONLY COMMAND ALIASES (Diagnostic - No Approval Needed)
+# ================================================================
+
+# --- System Information & Hardware ---
+Cmnd_Alias AI_SYSINFO = \
+    /usr/bin/uptime, \
+    /usr/bin/uname, \
+    /usr/bin/hostname, \
+    /usr/bin/hostnamectl, \
+    /usr/bin/timedatectl, \
+    /usr/bin/whoami, \
+    /usr/bin/id, \
+    /usr/bin/w, \
+    /usr/bin/who, \
+    /usr/bin/last, \
+    /usr/bin/lastlog, \
+    /usr/bin/lastb, \
+    /usr/bin/lscpu, \
+    /usr/bin/lsmem, \
+    /usr/bin/lspci, \
+    /usr/bin/lsusb, \
+    /usr/bin/nproc, \
+    /usr/bin/arch, \
+    /usr/bin/getconf *, \
+    /usr/bin/dmidecode, \
+    /usr/sbin/dmidecode
+
+# --- Process, CPU & Memory Monitoring ---
+Cmnd_Alias AI_PROCESS = \
+    /usr/bin/ps, \
+    /usr/bin/top, \
+    /usr/bin/htop, \
+    /usr/bin/atop, \
+    /usr/bin/free, \
+    /usr/bin/vmstat, \
+    /usr/bin/mpstat, \
+    /usr/bin/pidof, \
+    /usr/bin/pgrep, \
+    /usr/bin/pmap, \
+    /usr/bin/lsof, \
+    /usr/sbin/slabtop, \
+    /usr/bin/ipcs, \
+    /usr/bin/ipcrm
+
+# --- Disk, Filesystem & Storage ---
+Cmnd_Alias AI_STORAGE = \
+    /usr/bin/df, \
+    /usr/bin/du, \
+    /usr/bin/mount, \
+    /usr/bin/lsblk, \
+    /usr/sbin/blkid, \
+    /usr/sbin/fdisk -l, \
+    /usr/sbin/fdisk -l *, \
+    /usr/sbin/parted -l, \
+    /usr/sbin/parted print, \
+    /usr/sbin/lvs, \
+    /usr/sbin/vgs, \
+    /usr/sbin/pvs, \
+    /usr/sbin/lvdisplay, \
+    /usr/sbin/vgdisplay, \
+    /usr/sbin/pvdisplay, \
+    /usr/bin/findmnt, \
+    /usr/sbin/tune2fs -l *, \
+    /usr/sbin/xfs_info *, \
+    /usr/sbin/smartctl, \
+    /usr/sbin/mdadm --detail *
+
+# --- Network Diagnostics ---
+Cmnd_Alias AI_NETWORK = \
+    /usr/bin/ss, \
+    /usr/bin/netstat, \
+    /usr/sbin/ip, \
+    /usr/sbin/ifconfig, \
+    /usr/bin/ping, \
+    /usr/bin/ping6, \
+    /usr/bin/traceroute, \
+    /usr/bin/traceroute6, \
+    /usr/bin/mtr, \
+    /usr/bin/dig, \
+    /usr/bin/nslookup, \
+    /usr/bin/host, \
+    /usr/sbin/ethtool, \
+    /usr/sbin/arp, \
+    /usr/bin/arping, \
+    /usr/bin/nmap
+
+# --- Firewall (read-only listing ONLY) ---
+Cmnd_Alias AI_FIREWALL = \
+    /usr/sbin/iptables -L, \
+    /usr/sbin/iptables -L *, \
+    /usr/sbin/iptables -S, \
+    /usr/sbin/iptables -S *, \
+    /usr/sbin/iptables -t * -L, \
+    /usr/sbin/iptables -t * -L *, \
+    /usr/sbin/iptables -t * -S, \
+    /usr/sbin/iptables -t * -S *, \
+    /usr/sbin/iptables-save, \
+    /usr/sbin/ip6tables -L, \
+    /usr/sbin/ip6tables -L *, \
+    /usr/sbin/ip6tables -S, \
+    /usr/sbin/ip6tables -S *, \
+    /usr/sbin/ip6tables-save, \
+    /usr/sbin/nft list *, \
+    /usr/sbin/ufw status, \
+    /usr/sbin/ufw status *
+
+# --- System Logs ---
+Cmnd_Alias AI_LOGS = \
+    /usr/bin/journalctl, \
+    /usr/bin/dmesg, \
+    /usr/bin/ausearch, \
+    /usr/sbin/aureport
+
+# --- Safe File Reading (truly read-only commands) ---
+Cmnd_Alias AI_FILEREAD = \
+    /usr/bin/cat, \
+    /usr/bin/head, \
+    /usr/bin/tail, \
+    /usr/bin/grep, \
+    /usr/bin/egrep, \
+    /usr/bin/fgrep, \
+    /usr/bin/which, \
+    /usr/bin/whereis, \
+    /usr/bin/file, \
+    /usr/bin/stat, \
+    /usr/bin/ls, \
+    /usr/bin/tree, \
+    /usr/bin/wc, \
+    /usr/bin/sort, \
+    /usr/bin/uniq, \
+    /usr/bin/diff, \
+    /usr/bin/comm, \
+    /usr/bin/md5sum, \
+    /usr/bin/sha256sum, \
+    /usr/bin/sha1sum, \
+    /usr/bin/base64, \
+    /usr/bin/xxd, \
+    /usr/bin/strings, \
+    /usr/bin/od, \
+    /usr/bin/zcat, \
+    /usr/bin/zgrep, \
+    /usr/bin/bzcat, \
+    /usr/bin/xzcat, \
+    /usr/bin/jq
+
+# --- Interactive File Readers (NOEXEC to block shell escapes) ---
+Cmnd_Alias AI_FILEREAD_INTERACTIVE = \
+    /usr/bin/less, \
+    /usr/bin/more
+
+# --- Find/Locate (NOEXEC to prevent -exec abuse) ---
+Cmnd_Alias AI_FIND = \
+    /usr/bin/find, \
+    /usr/bin/locate
+
+# --- Service Status (read-only systemctl operations) ---
+Cmnd_Alias AI_SERVICE_RO = \
+    /usr/bin/systemctl status, \
+    /usr/bin/systemctl status *, \
+    /usr/bin/systemctl is-active, \
+    /usr/bin/systemctl is-active *, \
+    /usr/bin/systemctl is-enabled, \
+    /usr/bin/systemctl is-enabled *, \
+    /usr/bin/systemctl is-failed, \
+    /usr/bin/systemctl is-failed *, \
+    /usr/bin/systemctl list-units, \
+    /usr/bin/systemctl list-units *, \
+    /usr/bin/systemctl list-unit-files, \
+    /usr/bin/systemctl list-unit-files *, \
+    /usr/bin/systemctl list-timers, \
+    /usr/bin/systemctl list-timers *, \
+    /usr/bin/systemctl list-sockets, \
+    /usr/bin/systemctl list-sockets *, \
+    /usr/bin/systemctl show, \
+    /usr/bin/systemctl show *, \
+    /usr/bin/systemctl cat, \
+    /usr/bin/systemctl cat *
+
+# --- Docker/Podman (read-only operations) ---
+Cmnd_Alias AI_DOCKER_RO = \
+    /usr/bin/docker ps, \
+    /usr/bin/docker ps *, \
+    /usr/bin/docker logs, \
+    /usr/bin/docker logs *, \
+    /usr/bin/docker inspect, \
+    /usr/bin/docker inspect *, \
+    /usr/bin/docker stats, \
+    /usr/bin/docker stats *, \
+    /usr/bin/docker top, \
+    /usr/bin/docker top *, \
+    /usr/bin/docker images, \
+    /usr/bin/docker images *, \
+    /usr/bin/docker info, \
+    /usr/bin/docker version, \
+    /usr/bin/docker network ls, \
+    /usr/bin/docker network inspect *, \
+    /usr/bin/docker volume ls, \
+    /usr/bin/docker volume inspect *, \
+    /usr/bin/docker compose ps, \
+    /usr/bin/docker compose ps *, \
+    /usr/bin/docker compose logs, \
+    /usr/bin/docker compose logs *, \
+    /usr/bin/docker compose config, \
+    /usr/bin/docker compose config *, \
+    /usr/bin/docker system df, \
+    /usr/bin/docker system info, \
+    /usr/bin/docker events, \
+    /usr/bin/docker diff, \
+    /usr/bin/docker diff *, \
+    /usr/bin/docker port, \
+    /usr/bin/docker port *, \
+    /usr/bin/docker history, \
+    /usr/bin/docker history *
+
+# --- SSL/TLS Diagnostics ---
+Cmnd_Alias AI_SSL = \
+    /usr/bin/openssl s_client *, \
+    /usr/bin/openssl x509 *, \
+    /usr/bin/openssl verify *, \
+    /usr/bin/openssl crl *, \
+    /usr/bin/openssl req -text *, \
+    /usr/bin/certbot certificates
+
+# --- Web Server Config Validation (read-only) ---
+Cmnd_Alias AI_WEBSERVER = \
+    /usr/sbin/nginx -t, \
+    /usr/sbin/nginx -T, \
+    /usr/sbin/nginx -V, \
+    /usr/sbin/apache2ctl -t, \
+    /usr/sbin/apache2ctl -S, \
+    /usr/sbin/apache2ctl -M, \
+    /usr/sbin/apachectl -t, \
+    /usr/sbin/apachectl -S, \
+    /usr/sbin/apachectl -M
+
+# --- Database Status (read-only) ---
+Cmnd_Alias AI_DATABASE = \
+    /usr/bin/mysqladmin status, \
+    /usr/bin/mysqladmin processlist, \
+    /usr/bin/mysqladmin extended-status, \
+    /usr/bin/mysqladmin variables, \
+    /usr/bin/mysqladmin ping, \
+    /usr/bin/pg_isready, \
+    /usr/bin/redis-cli info, \
+    /usr/bin/redis-cli dbsize, \
+    /usr/bin/redis-cli slowlog get *, \
+    /usr/bin/redis-cli client list, \
+    /usr/bin/redis-cli config get *, \
+    /usr/bin/mongosh --eval *
+
+# --- Cron (read-only) ---
+Cmnd_Alias AI_CRON = \
+    /usr/bin/crontab -l, \
+    /usr/bin/crontab -l -u *
+
+# --- Performance & Tracing ---
+Cmnd_Alias AI_PERF = \
+    /usr/bin/strace, \
+    /usr/bin/ltrace, \
+    /usr/sbin/tcpdump, \
+    /usr/bin/perf stat *, \
+    /usr/bin/perf top, \
+    /usr/bin/iotop, \
+    /usr/bin/iftop, \
+    /usr/bin/iostat, \
+    /usr/bin/sar, \
+    /usr/bin/nmon, \
+    /usr/bin/dstat
+
+# --- Package Query (read-only) ---
+Cmnd_Alias AI_PKG_QUERY = \
+    /usr/bin/dpkg -l, \
+    /usr/bin/dpkg -l *, \
+    /usr/bin/dpkg -L *, \
+    /usr/bin/dpkg -s *, \
+    /usr/bin/dpkg --print-architecture, \
+    /usr/bin/apt list, \
+    /usr/bin/apt list *, \
+    /usr/bin/apt show *, \
+    /usr/bin/apt-cache *, \
+    /usr/bin/rpm -qa, \
+    /usr/bin/rpm -qi *, \
+    /usr/bin/rpm -ql *, \
+    /usr/bin/yum list *, \
+    /usr/bin/dnf list *, \
+    /usr/bin/snap list
+
+# --- Security Audit (read-only) ---
+Cmnd_Alias AI_SECURITY = \
+    /usr/bin/fail2ban-client status, \
+    /usr/bin/fail2ban-client status *, \
+    /usr/bin/getfacl, \
+    /usr/bin/getfacl *, \
+    /usr/bin/getfattr, \
+    /usr/bin/getfattr *, \
+    /usr/sbin/aa-status, \
+    /usr/sbin/getenforce, \
+    /usr/sbin/sestatus, \
+    /usr/bin/chage -l *, \
+    /usr/bin/passwd -S *
+
+# ================================================================
+#  WRITE OPERATION ALIASES (Controlled via wrapper scripts)
+#  These wrappers enforce: logging, backup, and audit trail
+# ================================================================
+
+Cmnd_Alias AI_WRITE_FILE = /usr/local/bin/ai-safe-edit *
+Cmnd_Alias AI_WRITE_PKG  = /usr/local/bin/ai-safe-pkg *
+Cmnd_Alias AI_WRITE_SVC  = /usr/local/bin/ai-safe-svc *
+
+# ================================================================
+#  PERMISSION ASSIGNMENTS
+# ================================================================
+
+# Read-Only Diagnostics - No password, full diagnostic freedom
+ai-agent ALL=(ALL) NOPASSWD: AI_SYSINFO
+ai-agent ALL=(ALL) NOPASSWD: AI_PROCESS
+ai-agent ALL=(ALL) NOPASSWD: AI_STORAGE
+ai-agent ALL=(ALL) NOPASSWD: AI_NETWORK
+ai-agent ALL=(ALL) NOPASSWD: AI_FIREWALL
+ai-agent ALL=(ALL) NOPASSWD: AI_LOGS
+ai-agent ALL=(ALL) NOPASSWD: AI_FILEREAD
+ai-agent ALL=(ALL) NOPASSWD: AI_SERVICE_RO
+ai-agent ALL=(ALL) NOPASSWD: AI_DOCKER_RO
+ai-agent ALL=(ALL) NOPASSWD: AI_SSL
+ai-agent ALL=(ALL) NOPASSWD: AI_WEBSERVER
+ai-agent ALL=(ALL) NOPASSWD: AI_DATABASE
+ai-agent ALL=(ALL) NOPASSWD: AI_CRON
+ai-agent ALL=(ALL) NOPASSWD: AI_PERF
+ai-agent ALL=(ALL) NOPASSWD: AI_PKG_QUERY
+ai-agent ALL=(ALL) NOPASSWD: AI_SECURITY
+
+# Interactive readers & find - NOEXEC prevents shell escape
+ai-agent ALL=(ALL) NOEXEC:NOPASSWD: AI_FILEREAD_INTERACTIVE
+ai-agent ALL=(ALL) NOEXEC:NOPASSWD: AI_FIND
+
+# Write Operations - No password but ONLY through audited wrappers
+# The wrappers enforce backup + logging before any change
+ai-agent ALL=(ALL) NOPASSWD: AI_WRITE_FILE
+ai-agent ALL=(ALL) NOPASSWD: AI_WRITE_PKG
+ai-agent ALL=(ALL) NOPASSWD: AI_WRITE_SVC
+
+# ================================================================
+#  END OF AI AGENT SUDOERS - DO NOT ADD RULES BELOW THIS LINE
+# ================================================================
